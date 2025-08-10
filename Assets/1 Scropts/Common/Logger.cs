@@ -7,22 +7,38 @@ using System.Diagnostics;
 /// </summary>
 public static class Logger
 {
-    [Conditional("Dev")]
+    [Conditional("DEVELOPMENT_BUILD")]
     public static void Log(string message)
     {
-        UnityEngine.Debug.Log($"[{TimeString}] {message}]");
+        UnityEngine.Debug.Log($"[{TimeString}] {message}");
     }
 
-    [Conditional("Dev")]
+    [Conditional("DEVELOPMENT_BUILD")]
     public static void LogWarning(string message)
     {
-        UnityEngine.Debug.LogWarning($"[{TimeString}] {message}]");
+        UnityEngine.Debug.LogWarning($"[{TimeString}] {message}");
     }
 
     public static void LogError(string message)
     {
-        UnityEngine.Debug.LogError($"[{TimeString}] {message}]");
+        UnityEngine.Debug.LogError($"[{TimeString}] {message}");
     }
 
-    private static string TimeString => $"{System.DateTime.Now:MM/dd/yyyy hh:mm:ss.fff}";
+    private static string _timeString;
+    private static System.DateTime _now;
+    private static readonly System.TimeSpan UpdateInterval = System.TimeSpan.FromMilliseconds(100);
+
+    private static string TimeString
+    {
+        get
+        {
+            var now = System.DateTime.Now;
+            if (_timeString == null || now - _now > UpdateInterval)
+            {
+                _now = now;
+                _timeString = _now.ToString("MM/dd/yyyy hh:mm:ss.fff");
+            }
+            return _timeString;
+        }
+    }
 }
