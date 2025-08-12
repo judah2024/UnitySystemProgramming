@@ -10,6 +10,11 @@ public enum SceneType
 
 public class SceneLoader
 {
+    public void Init()
+    {
+        
+    }
+    
     public void LoadScene(SceneType sceneType)
     {
         LoggerEx.Log($"{sceneType} scene loading...");

@@ -67,12 +67,12 @@ public class Game : MonoBehaviour
 
     private async UniTask InitializeGlobalManager()
     {
-        
+        _sceneLoader.Init();
     }
 
     #region Manager
 
-    private SceneLoader _sceneLoader;
+    private SceneLoader _sceneLoader = new SceneLoader();
     
     public static SceneLoader SceneLoader => Instance._sceneLoader;
 
