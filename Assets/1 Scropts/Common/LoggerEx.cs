@@ -5,15 +5,15 @@ using System.Diagnostics;
 /// Default, Warning, Error 3단계로 나눈 간단한 로거 <br/>
 /// Conditional로 출시용 빌드시 로그 제거(Error 제외)
 /// </summary>
-public static class Logger
+public static class LoggerEx
 {
-    [Conditional("DEVELOPMENT_BUILD")]
+    [Conditional("Dev")]
     public static void Log(string message)
     {
         UnityEngine.Debug.Log($"[{TimeString}] {message}");
     }
 
-    [Conditional("DEVELOPMENT_BUILD")]
+    [Conditional("Dev")]
     public static void LogWarning(string message)
     {
         UnityEngine.Debug.LogWarning($"[{TimeString}] {message}");
