@@ -8,31 +8,25 @@ public class Game : MonoBehaviour
     private static readonly object Locker = new object();
     
     private static Game _instance;
-    public static Game Instance
-    {
-        get
-        {
-            lock (Locker)
-            {
-                return GetInstance();
-            }
-        }
-    }
+    public static Game Instance => _instance ?? GetInstance();
 
     private static Game GetInstance()
     {
-        if (_instance == null)
+        lock (Locker)
         {
-            _instance = FindAnyObjectByType<Game>();
             if (_instance == null)
             {
-                var obj = new GameObject("Game");
-                _instance = obj.AddComponent<Game>();
+                _instance = FindAnyObjectByType<Game>();
+                if (_instance == null)
+                {
+                    var obj = new GameObject("Game");
+                    _instance = obj.AddComponent<Game>();
+                }
+                DontDestroyOnLoad(_instance.gameObject);
             }
-            DontDestroyOnLoad(_instance.gameObject);
-        }
                 
-        return _instance;
+            return _instance;
+        }
     }
     
 
@@ -43,7 +37,6 @@ public class Game : MonoBehaviour
 
     private void OnDestroy()
     {
-        CurrentSceneController?.OnExit();
         _sceneLoader?.Dispose();
     }
 
@@ -59,13 +52,11 @@ public class Game : MonoBehaviour
     {
         lock (Locker)
         {
-            if (_instance != this && _instance != null)
+            if (Instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
-            
-            _instance = this;
         }
 
         LoggerEx.Log("[Game] Game Init");
