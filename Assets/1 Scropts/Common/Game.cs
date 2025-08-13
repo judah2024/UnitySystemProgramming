@@ -1,17 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
 public class Game : MonoBehaviour
 {
-    private static readonly object _locker = new object();
+    private static readonly object Locker = new object();
     
     private static Game _instance;
     public static Game Instance
     {
         get
         {
-            lock (_locker)
+            lock (Locker)
             {
                 return GetInstance();
             }
@@ -27,6 +28,7 @@ public class Game : MonoBehaviour
             {
                 var obj = new GameObject("Game");
                 _instance = obj.AddComponent<Game>();
+				DontDestroyOnLoad(_instance.gameObject);
             }
         }
                 
@@ -39,9 +41,22 @@ public class Game : MonoBehaviour
         Init();
     }
 
+    private void OnDestroy()
+    {
+        CurrentSceneController?.OnExit();
+    }
+
+    private void OnApplicationPause(bool isPause)
+    {
+        if (isPause)
+            CurrentSceneController?.OnPause();
+        else
+            CurrentSceneController?.OnResume();
+    }
+
     private void Init()
     {
-        lock (_locker)
+        lock (Locker)
         {
             if (_instance == this)
                 return;
@@ -57,24 +72,26 @@ public class Game : MonoBehaviour
             LoggerEx.Log("[Game] Game Init");
         }
 
-        InitializeRoutine();
+        InitializeRoutine().Forget();
     }
 
-    private async UniTaskVoid InitializeRoutine()
+    private async UniTask InitializeRoutine()
     {
         await InitializeGlobalManager();
     }
 
     private async UniTask InitializeGlobalManager()
     {
-        _sceneLoader.Init();
+        await UniTask.Yield();
     }
 
-    #region Manager
+    #region Scene
 
     private SceneLoader _sceneLoader = new SceneLoader();
-    
     public static SceneLoader SceneLoader => Instance._sceneLoader;
+    public ISceneController CurrentSceneController => _sceneLoader.CurrentSceneController;
+
 
     #endregion
+    
 }

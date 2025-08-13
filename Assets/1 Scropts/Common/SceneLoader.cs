@@ -8,26 +8,61 @@ public enum SceneType
     Stage,
 }
 
+/// <summary>
+/// 씬 전환기
+/// 비동기/동기 씬 전환 지원(예정)
+/// </summary>
 public class SceneLoader
 {
-    public void Init()
-    {
-        
-    }
+    public ISceneController CurrentSceneController { get; private set; }
     
+    
+    public SceneLoader()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
+    }
+
+    ~SceneLoader()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+    }
+
     public void LoadScene(SceneType sceneType)
     {
-        LoggerEx.Log($"{sceneType} scene loading...");
+        LoggerEx.Log($"[SceneLoader] {sceneType} scene loading...");
         
         Time.timeScale = 1f;
         SceneManager.LoadScene(sceneType.ToString());
     }
 
+    public AsyncOperation LoadSceneAsync(SceneType sceneType)
+    {
+        LoggerEx.Log($"[SceneLoader] {sceneType} scene async loading...");
+        
+        Time.timeScale = 1f;
+        return SceneManager.LoadSceneAsync(sceneType.ToString());
+    }
+
     public void ReloadScene()
     {
-        LoggerEx.Log($"{SceneManager.GetActiveScene().name} scene loading...");
+        LoggerEx.Log($"[SceneLoader] {SceneManager.GetActiveScene().name} scene loading...");
         
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        LoggerEx.Log($"[SceneLoader] Scene loaded: {scene.name} (Mode: {mode})");
+        CurrentSceneController = Object.FindAnyObjectByType<SceneControllerBase>();
+        CurrentSceneController?.OnEnter();
+    }
+
+    private void OnSceneUnloaded(Scene scene)
+    {
+        LoggerEx.Log($"[SceneLoader] Scene unloaded: {scene.name}");
+        CurrentSceneController?.OnExit();
     }
 }
