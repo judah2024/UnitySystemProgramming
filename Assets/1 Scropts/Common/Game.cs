@@ -8,31 +8,39 @@ public class Game : MonoBehaviour
     private static readonly object Locker = new object();
     
     private static Game _instance;
-    public static Game Instance => _instance ?? GetInstance();
+    public static Game Instance
+    {
+        get
+        {
+            return _instance ?? GetInstance();
+        }
+    }
 
     private static Game GetInstance()
     {
-        lock (Locker)
+        _instance = FindAnyObjectByType<Game>();
+        if (_instance == null)
         {
-            if (_instance == null)
-            {
-                _instance = FindAnyObjectByType<Game>();
-                if (_instance == null)
-                {
-                    var obj = new GameObject("Game");
-                    _instance = obj.AddComponent<Game>();
-                }
-                DontDestroyOnLoad(_instance.gameObject);
-            }
-                
-            return _instance;
+            var obj = new GameObject("Game");
+            _instance = obj.AddComponent<Game>();
         }
+                
+        return _instance;
     }
     
 
     private void Awake()
     {
-        Init();
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        _instance = this;
+        DontDestroyOnLoad(this);
+        
+        InitializeRoutine().Forget();
     }
 
     private void OnDestroy()
@@ -48,23 +56,9 @@ public class Game : MonoBehaviour
             CurrentSceneController?.OnResume();
     }
 
-    private void Init()
-    {
-        lock (Locker)
-        {
-            if (Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-        }
-
-        LoggerEx.Log("[Game] Game Init");
-        InitializeRoutine().Forget();
-    }
-
     private async UniTask InitializeRoutine()
     {
+        LoggerEx.Log("[Game] Game Init");
         await InitializeGlobalManager();
     }
 
