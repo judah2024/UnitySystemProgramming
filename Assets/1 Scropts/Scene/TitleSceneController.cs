@@ -37,8 +37,6 @@ public class TitleSceneController : SceneControllerBase
         logoAnim.gameObject.SetActive(false);
         titleObj.SetActive(true);
 
-        Game.SceneLoader.LoadScene(SceneType.Lobby);
-
         _asyncOperation = Game.SceneLoader.LoadSceneAsync(SceneType.Lobby);
         if(_asyncOperation == null)
         {
@@ -48,13 +46,24 @@ public class TitleSceneController : SceneControllerBase
 
         _asyncOperation.allowSceneActivation = false;
 
-        loadingSlider.value = 0.5f;
+        loadingSlider.value = 0f;
         loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
-        await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
 
+        float addDelay = 2.0f;
+        float loadPercent = 0.9f;
+        float time = 0f;
+        while (time < addDelay)
+        {
+            loadingSlider.value = time / addDelay * loadPercent;
+            loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
+            await UniTask.NextFrame();
+                    
+            time += Time.deltaTime;
+        }
+                
         while(!_asyncOperation.isDone)
         {
-            loadingSlider.value = _asyncOperation.progress < 0.5f ? 0.5f : _asyncOperation.progress;
+            loadingSlider.value = Mathf.Lerp(loadPercent, 1.0f, _asyncOperation.progress);
             loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
 
             if(_asyncOperation.progress >= 0.9f)
@@ -65,5 +74,8 @@ public class TitleSceneController : SceneControllerBase
 
             await UniTask.NextFrame();
         }
+        
+        loadingSlider.value = 1f;
+        loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
     }
 }
