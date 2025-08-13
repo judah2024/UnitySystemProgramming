@@ -8,8 +8,6 @@ public class TitleSceneController : SceneControllerBase
 {
     [SerializeField]
     private Animation logoAnim;
-    [SerializeField]
-    private TextMeshProUGUI logoText;
 
     [SerializeField]
     private GameObject titleObj;
@@ -49,27 +47,27 @@ public class TitleSceneController : SceneControllerBase
         loadingSlider.value = 0f;
         loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
 
-        float addDelay = 2.0f;
-        float loadPercent = 0.9f;
+        const float minDelay = 2.0f;
+        const float minPercent = 0.9f;
         float time = 0f;
-        while (time < addDelay)
+        while (time < minDelay)
         {
-            loadingSlider.value = time / addDelay * loadPercent;
+            loadingSlider.value = time / minDelay * minPercent;
             loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
             await UniTask.NextFrame();
                     
-            time += Time.deltaTime;
+            time += Time.unscaledDeltaTime;
         }
                 
         while(!_asyncOperation.isDone)
         {
-            loadingSlider.value = Mathf.Lerp(loadPercent, 1.0f, _asyncOperation.progress);
+            loadingSlider.value = Mathf.Lerp(minPercent, 1.0f, _asyncOperation.progress);
             loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
 
             if(_asyncOperation.progress >= 0.9f)
             {
                 _asyncOperation.allowSceneActivation = true;
-                return;
+                break;
             }
 
             await UniTask.NextFrame();

@@ -28,7 +28,6 @@ public class Game : MonoBehaviour
             {
                 var obj = new GameObject("Game");
                 _instance = obj.AddComponent<Game>();
-				DontDestroyOnLoad(_instance.gameObject);
             }
         }
                 
@@ -44,6 +43,7 @@ public class Game : MonoBehaviour
     private void OnDestroy()
     {
         CurrentSceneController?.OnExit();
+        _sceneLoader.Dispose();
     }
 
     private void OnApplicationPause(bool isPause)
@@ -58,10 +58,7 @@ public class Game : MonoBehaviour
     {
         lock (Locker)
         {
-            if (_instance == this)
-                return;
-            
-            if (_instance != null)
+            if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
                 return;

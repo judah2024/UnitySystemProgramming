@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 public enum SceneType
 {
@@ -12,7 +14,7 @@ public enum SceneType
 /// 씬 전환기
 /// 비동기/동기 씬 전환 지원(예정)
 /// </summary>
-public class SceneLoader
+public class SceneLoader : IDisposable
 {
     public ISceneController CurrentSceneController { get; private set; }
     
@@ -23,7 +25,7 @@ public class SceneLoader
         SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
 
-    ~SceneLoader()
+    public void Dispose()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
