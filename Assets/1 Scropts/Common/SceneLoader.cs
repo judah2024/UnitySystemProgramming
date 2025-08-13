@@ -29,6 +29,7 @@ public class SceneLoader : IDisposable
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
+        GC.SuppressFinalize(this);
     }
 
     public void LoadScene(SceneType sceneType)
