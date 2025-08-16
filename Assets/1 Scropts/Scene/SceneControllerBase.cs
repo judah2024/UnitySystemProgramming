@@ -9,7 +9,7 @@ public abstract class SceneControllerBase : MonoBehaviour, ISceneController
     
     private bool isInitialized = false;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (isInitialized) return;
         

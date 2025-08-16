@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 public enum SceneType
 {
@@ -59,7 +58,7 @@ public class SceneLoader : IDisposable
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         LoggerEx.Log($"[SceneLoader] Scene loaded: {scene.name} (Mode: {mode})");
-        CurrentSceneController = Object.FindAnyObjectByType<SceneControllerBase>();
+        CurrentSceneController = GameObject.FindAnyObjectByType<SceneControllerBase>();
         CurrentSceneController?.OnEnter();
     }
 
@@ -67,5 +66,13 @@ public class SceneLoader : IDisposable
     {
         LoggerEx.Log($"[SceneLoader] Scene unloaded: {scene.name}");
         CurrentSceneController?.OnExit();
+    }
+
+    public void OnPause(bool isPause)
+    {
+        if (isPause)
+            CurrentSceneController?.OnPause();
+        else
+            CurrentSceneController?.OnResume();
     }
 }

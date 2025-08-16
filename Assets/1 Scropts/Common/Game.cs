@@ -1,7 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Cysharp.Threading.Tasks;
-using UnityEngine.SceneManagement;
 
 public class Game : MonoBehaviour
 {
@@ -48,14 +46,6 @@ public class Game : MonoBehaviour
         _sceneLoader?.Dispose();
     }
 
-    private void OnApplicationPause(bool isPause)
-    {
-        if (isPause)
-            CurrentSceneController?.OnPause();
-        else
-            CurrentSceneController?.OnResume();
-    }
-
     private async UniTask InitializeRoutine()
     {
         LoggerEx.Log("[Game] Game Init");
@@ -64,16 +54,25 @@ public class Game : MonoBehaviour
 
     private async UniTask InitializeGlobalManager()
     {
-        await UniTask.Yield();
+        await Data.Init();
     }
 
     #region Scene
 
     private SceneLoader _sceneLoader = new SceneLoader();
     public static SceneLoader SceneLoader => Instance._sceneLoader;
-    public ISceneController CurrentSceneController => _sceneLoader.CurrentSceneController;
 
+    private void OnApplicationPause(bool isPause)
+    {
+        _sceneLoader.OnPause(isPause);
+    }
 
     #endregion
-    
+
+    #region Manager
+
+    private DataManager _data = new DataManager();
+    public static DataManager Data => Instance._data;
+
+    #endregion
 }

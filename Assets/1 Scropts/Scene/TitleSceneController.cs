@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 
-public class TitleSceneController : SceneControllerBase
+public sealed class TitleSceneController : SceneControllerBase
 {
     [SerializeField]
     private Animation logoAnim;
@@ -15,8 +15,14 @@ public class TitleSceneController : SceneControllerBase
     private Slider loadingSlider;
     [SerializeField]
     private TextMeshProUGUI loadingProgressText;
-    
-    private AsyncOperation _asyncOperation;
+
+    private new void Awake()
+    {
+        logoAnim.gameObject.SetActive(true);
+        titleObj.SetActive(false);    
+
+        base.Awake();
+    }
     
     public override void OnEnter()
     {
@@ -27,7 +33,14 @@ public class TitleSceneController : SceneControllerBase
 
     async UniTask OnEnterRoutine()
     {
-        LoggerEx.Log($"{{GetType()}}::OnEnterRoutine");
+        Game.Data.LoadData();
+
+        await LoadingRoutine();
+    }
+
+    private async UniTask LoadingRoutine()
+    {
+        LoggerEx.Log($"{GetType()}::OnEnterRoutine");
         
         logoAnim.Play();
         await UniTask.Delay(TimeSpan.FromSeconds(logoAnim.clip.length));
@@ -35,14 +48,14 @@ public class TitleSceneController : SceneControllerBase
         logoAnim.gameObject.SetActive(false);
         titleObj.SetActive(true);
 
-        _asyncOperation = Game.SceneLoader.LoadSceneAsync(SceneType.Lobby);
-        if(_asyncOperation == null)
+        var asyncOp = Game.SceneLoader.LoadSceneAsync(SceneType.Lobby);
+        if(asyncOp == null)
         {
             LoggerEx.Log("Lobby async loading error.");
             return;
         }
 
-        _asyncOperation.allowSceneActivation = false;
+        asyncOp.allowSceneActivation = false;
 
         loadingSlider.value = 0f;
         loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
@@ -59,14 +72,14 @@ public class TitleSceneController : SceneControllerBase
             time += Time.unscaledDeltaTime;
         }
                 
-        while(!_asyncOperation.isDone)
+        while(!asyncOp.isDone)
         {
-            loadingSlider.value = Mathf.Lerp(minPercent, 1.0f, _asyncOperation.progress);
+            loadingSlider.value = Mathf.Lerp(minPercent, 1.0f, asyncOp.progress);
             loadingProgressText.text = $"{(int)(loadingSlider.value * 100)}%";
 
-            if(_asyncOperation.progress >= 0.9f)
+            if(asyncOp.progress >= 0.9f)
             {
-                _asyncOperation.allowSceneActivation = true;
+                asyncOp.allowSceneActivation = true;
                 break;
             }
 
